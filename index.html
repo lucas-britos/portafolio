@@ -1596,16 +1596,17 @@
   </div>
 
   <!-- MSN Messenger Toast Notification - High Fidelity -->
-  <div id="msn-toast" class="msn-toast">
+  <div id="msn-toast" class="msn-toast" onclick="abrirChatDesdeCallback()">
     <div class="msn-toast-header">
       <img src="images/icons/icon - msn.png" class="msn-toast-header-icon" alt="">
       <span>MSN Messenger</span>
-      <div class="msn-toast-close">×</div>
+      <div class="msn-toast-close"
+        onclick="event.stopPropagation(); document.getElementById('msn-toast').style.display='none';">×</div>
     </div>
     <div class="msn-toast-options">Opciones</div>
     <div class="msn-toast-body">
       <div class="msn-toast-avatar-frame">
-        <img src="images/icono-user.jpg" class="msn-toast-icon" alt="msn">
+        <img src="images/foto-perfil-perro.jpeg" class="msn-toast-icon" alt="msn">
       </div>
       <div class="msn-toast-content">
         <span class="msn-toast-name">Lucas Britos</span>

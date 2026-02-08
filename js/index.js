@@ -890,7 +890,24 @@ function cerrarGlobo() {
   }
 }
 
+// Open chat from toast click
+function abrirChatDesdeCallback() {
+  const msnToast = document.getElementById('msn-toast');
+  if (msnToast) msnToast.style.display = 'none';
+
+  const ventanaMsn = document.getElementById('ventana-msn');
+  if (ventanaMsn) {
+    abrirVentana('ventana-msn');
+  }
+
+  const btnMsn = document.querySelector(`.btn-tarea[data-ventana="ventana-msn"]`);
+  if (btnMsn) {
+    btnMsn.classList.remove('titilando');
+  }
+}
+
 // Export for HTML onclick
+window.abrirChatDesdeCallback = abrirChatDesdeCallback;
 window.cerrarGlobo = cerrarGlobo;
 window.mostrarGloboXP = mostrarGloboXP;
 

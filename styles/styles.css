@@ -1445,7 +1445,7 @@ body {
 /* NOTIFICACION MSN (TOAST) - High Fidelity Version */
 .msn-toast {
   position: fixed;
-  bottom: 45px;
+  bottom: 40px;
   right: 0;
   width: 240px;
   background: linear-gradient(to bottom, #f0f7ff 0%, #d4e7f9 100%);
@@ -1457,6 +1457,7 @@ body {
   font-family: 'Tahoma', sans-serif;
   animation: msn-slide-up 0.5s ease-out;
   padding-bottom: 5px;
+  cursor: pointer;
 }
 
 @keyframes msn-slide-up {
