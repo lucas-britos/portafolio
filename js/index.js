@@ -861,6 +861,20 @@ function ejecutarZumbido() {
   setTimeout(() => {
     ventana.classList.remove('msn-shaking');
   }, 500);
+
+  // Add "Buzz Sent" message to chat
+  const msnMessages = document.getElementById('msn-messages');
+  if (msnMessages) {
+    const buzzMsg = document.createElement('div');
+    buzzMsg.innerHTML = `
+      <div style="font-weight: bold; font-style: italic; color: #555; margin: 10px 0;">
+        Has enviado un zumbido.
+      </div>
+      <hr style="border: 0; border-top: 1px solid #ccc; margin-bottom: 10px;">
+    `;
+    msnMessages.appendChild(buzzMsg);
+    msnMessages.scrollTop = msnMessages.scrollHeight;
+  }
 }
 
 // --- Project Window Interaction ---
@@ -946,9 +960,18 @@ function dispararAlertaMSN(mensaje, nombre = "Lucas Britos") {
     if (toastMsg) toastMsg.textContent = mensaje.substring(0, 45) + (mensaje.length > 45 ? "..." : "");
     if (toastName) toastName.textContent = nombre;
 
+    msnToast.classList.remove('msn-toast-hide'); // Reset animation state
     msnToast.style.display = 'block';
+
+    // Auto hide logic with animation
     setTimeout(() => {
-      msnToast.style.display = 'none';
+      msnToast.classList.add('msn-toast-hide');
+
+      // Wait for animation to finish (0.8s) before hiding
+      setTimeout(() => {
+        msnToast.style.display = 'none';
+        msnToast.classList.remove('msn-toast-hide');
+      }, 750);
     }, 8000);
   }
 

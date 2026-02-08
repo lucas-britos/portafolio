@@ -1472,6 +1472,22 @@ body {
   }
 }
 
+@keyframes msn-slide-down {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+}
+
+.msn-toast-hide {
+  animation: msn-slide-down 0.8s ease-in forwards;
+}
+
 .msn-toast-header {
   height: 22px;
   background: linear-gradient(to bottom, #fafdff 0%, #e2eff9 100%);
