@@ -519,28 +519,24 @@ if (msnZumbido) {
   msnZumbido.addEventListener('click', () => ejecutarZumbido());
 }
 
+// --- MSN Message Queue Logic ---
+let colaMensajesMSN = [];
+let procesandoCola = false;
+
 function enviarMensajeMSN() {
   const texto = msnInput.value.trim();
   if (!texto) return;
 
-  // Clear input
+  // Clear input immediately
   msnInput.value = '';
 
-  // Append user message
+  // Append user message immediately
   const userMsgDiv = document.createElement('div');
   userMsgDiv.innerHTML = `<div style="margin-top: 10px; margin-bottom: 5px;"><b style="color: #bc1a1a;">Vos decís:</b></div><div style="margin-left: 10px;">${texto}</div>`;
   msnMessages.appendChild(userMsgDiv);
   msnMessages.scrollTop = msnMessages.scrollHeight;
 
-  // Add "Typing..." indicator
-  const typingDiv = document.createElement('div');
-  typingDiv.id = 'msn-typing';
-  typingDiv.style.cssText = 'color: #666; font-style: italic; margin-top: 10px; font-size: 11px;';
-  typingDiv.textContent = 'Lucas Britos está escribiendo...';
-  msnMessages.appendChild(typingDiv);
-  msnMessages.scrollTop = msnMessages.scrollHeight;
-
-  // Tracking: Evento de envío de mensaje
+  // Tracking
   if (typeof gtag === 'function') {
     gtag('event', 'msn_message_sent', {
       'event_category': 'interaction',
@@ -548,48 +544,75 @@ function enviarMensajeMSN() {
     });
   }
 
-  // Simulate delay and fetch Gemini response
-  setTimeout(async () => {
-    try {
-      const response = await obtenerRespuestaGemini(texto);
+  // Push to queue and trigger processing
+  colaMensajesMSN.push(texto);
+  actualizarIndicadorEscribiendo();
+  procesarColaMensajes();
+}
 
-      // Remove typing indicator
-      const typing = document.getElementById('msn-typing');
-      if (typing) typing.remove();
+function actualizarIndicadorEscribiendo() {
+  if (!document.getElementById('msn-typing')) {
+    const typingDiv = document.createElement('div');
+    typingDiv.id = 'msn-typing';
+    typingDiv.style.cssText = 'color: #666; font-style: italic; margin-top: 10px; font-size: 11px;';
+    typingDiv.textContent = 'Lucas Britos calculando respuesta...';
+    msnMessages.appendChild(typingDiv);
+    msnMessages.scrollTop = msnMessages.scrollHeight;
+  }
+}
 
-      // Append AI or System message
-      const aiMsgDiv = document.createElement('div');
+async function procesarColaMensajes() {
+  if (procesandoCola || colaMensajesMSN.length === 0) return;
 
-      if (response.startsWith("SYSTEM ERROR") || response.startsWith("Error de sistema")) {
-        aiMsgDiv.innerHTML = `<div class="msn-system-error" style="margin-top: 10px; padding: 8px; background: #0000aa; color: #fff; font-family: monospace; border: 1px solid #fff;">${response}</div>`;
-      } else {
-        // Convertir emoticones de texto a emojis
-        const respuestaConEmojis = convertirEmoticonesAEmojis(response);
-        aiMsgDiv.innerHTML = `<div style="margin-top: 10px; margin-bottom: 5px;"><b style="color: #1a56bc;">Lucas Britos dice:</b></div><div style="margin-left: 10px;">${respuestaConEmojis}</div>`;
-      }
+  procesandoCola = true;
+  const mensajeActual = colaMensajesMSN.shift();
 
-      msnMessages.appendChild(aiMsgDiv);
-      msnMessages.scrollTop = msnMessages.scrollHeight;
+  try {
+    // Force a 2-second "thinking" delay for realism and primary rate limiting aid
+    await new Promise(resolve => setTimeout(resolve, 2000));
 
-      // Alerta si la ventana está minimizada o no es el foco actual
-      const ventanaMsn = document.getElementById('ventana-msn');
-      const isMinimized = !ventanaMsn || ventanaMsn.style.display === 'none' || ventanaMsn.classList.contains('minimizada');
-      const isNotFocused = ventanaMsn && ventanaMsn.style.zIndex !== '1000';
+    const response = await obtenerRespuestaGemini(mensajeActual);
 
-      if (isMinimized || isNotFocused) {
-        dispararAlertaMSN(response);
-      } else {
-        // En MSN original, si estás chateando en la ventana activa, no suena el "tururu" a cada rato.
-      }
-    } catch (error) {
-      console.error("Chat error:", error);
-      const typing = document.getElementById('msn-typing');
-      if (typing) {
-        typing.style.color = 'red';
-        typing.textContent = 'Error de conexión: ' + error.message;
-      }
+    // Remove typing indicator
+    const typing = document.getElementById('msn-typing');
+    if (typing) typing.remove();
+
+    // Append AI response
+    const aiMsgDiv = document.createElement('div');
+    if (response.startsWith("SYSTEM ERROR") || response.startsWith("Error de sistema")) {
+      aiMsgDiv.innerHTML = `<div class="msn-system-error" style="margin-top: 10px; padding: 8px; background: #0000aa; color: #fff; font-family: monospace; border: 1px solid #fff;">${response}</div>`;
+    } else {
+      const respuestaConEmojis = convertirEmoticonesAEmojis(response);
+      aiMsgDiv.innerHTML = `<div style="margin-top: 10px; margin-bottom: 5px;"><b style="color: #1a56bc;">Lucas Britos dice:</b></div><div style="margin-left: 10px;">${respuestaConEmojis}</div>`;
     }
-  }, 1500);
+    msnMessages.appendChild(aiMsgDiv);
+    msnMessages.scrollTop = msnMessages.scrollHeight;
+
+    // Alert handling
+    const ventanaMsn = document.getElementById('ventana-msn');
+    const isMinimized = !ventanaMsn || ventanaMsn.style.display === 'none' || ventanaMsn.classList.contains('minimizada');
+    const isNotFocused = ventanaMsn && ventanaMsn.style.zIndex !== '1000';
+
+    if (isMinimized || isNotFocused) {
+      dispararAlertaMSN(response);
+    }
+  } catch (error) {
+    console.error("Queue processing error:", error);
+    const typing = document.getElementById('msn-typing');
+    if (typing) {
+      typing.style.color = 'red';
+      typing.textContent = 'Error: ' + error.message;
+    }
+  } finally {
+    procesandoCola = false;
+
+    // If there are more messages, process next with a Safety GAP
+    if (colaMensajesMSN.length > 0) {
+      actualizarIndicadorEscribiendo();
+      // Wait 4 seconds before processing the next message to strictly avoid Rate Limits
+      setTimeout(procesarColaMensajes, 4000);
+    }
+  }
 }
 
 // Convert text emoticons to emojis
@@ -717,18 +740,18 @@ IMPORTANTE: NO incluyas el formato 'Lucas Britos dice:' en tus respuestas, solo 
     historialMSN = [historialMSN[0], historialMSN[1], ...historialMSN.slice(-10)];
   }
 
+  // Sanitize history to prevent 400 Bad Request (empty content)
+  const historialValido = historialMSN.filter(msg => {
+    return msg.parts && msg.parts.length > 0 &&
+      msg.parts[0].text && msg.parts[0].text.trim() !== "";
+  });
+
   const body = {
-    contents: historialMSN,
+    contents: historialValido,
     generationConfig: {
       temperature: 0.9,
-      maxOutputTokens: 300, // Reduced for efficiency
-    },
-    safetySettings: [
-      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
-      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
-      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
-      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
-    ]
+      maxOutputTokens: 300,
+    }
   };
 
   try {
