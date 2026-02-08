@@ -570,6 +570,22 @@ function enviarMensajeMSN() {
 
       msnMessages.appendChild(aiMsgDiv);
       msnMessages.scrollTop = msnMessages.scrollHeight;
+
+      // Alerta si la ventana está minimizada o no es el foco actual
+      const ventanaMsn = document.getElementById('ventana-msn');
+      const isMinimized = !ventanaMsn || ventanaMsn.style.display === 'none' || ventanaMsn.classList.contains('minimizada');
+      const isNotFocused = ventanaMsn && ventanaMsn.style.zIndex !== '1000';
+
+      if (isMinimized || isNotFocused) {
+        dispararAlertaMSN(response);
+      } else {
+        // Si está abierta, solo el sonido
+        const sonidoMSN = document.getElementById('sonido-msn');
+        if (sonidoMSN) {
+          sonidoMSN.currentTime = 0;
+          sonidoMSN.play().catch(e => console.log(e));
+        }
+      }
     } catch (error) {
       console.error("Chat error:", error);
       const typing = document.getElementById('msn-typing');
@@ -808,40 +824,18 @@ function iniciarSecuenciaBienvenidaMSN() {
   if (window.msnBienvenidaIniciada) return;
   window.msnBienvenidaIniciada = true;
 
-  const sonidoMSN = document.getElementById('sonido-msn');
-  const msnToast = document.getElementById('msn-toast');
   const welcomeMsg = "¡Hola! Bienvenidos a mi portfolio estilo Windows XP.";
 
-  // 1. Play Sound
-  if (sonidoMSN) {
-    sonidoMSN.volume = 0.6;
-    sonidoMSN.play().catch(e => console.log("MSN Sound error:", e));
-  }
+  // 1. Disparar la alerta completa (Sonido + Toast + Titileo)
+  dispararAlertaMSN(welcomeMsg);
 
-  // 2. Show Toast Notification
-  if (msnToast) {
-    msnToast.style.display = 'block';
-    setTimeout(() => {
-      msnToast.style.display = 'none';
-    }, 8000); // Hide after 8 seconds
-  }
-
-  // 3. Make Taskbar button flash (titilar)
-  // Ensure the button exists even if window is closed
-  if (!document.querySelector(`.btn-tarea[data-ventana="ventana-msn"]`)) {
-    crearBotonTarea('ventana-msn');
-  }
-  const btnMsn = document.querySelector(`.btn-tarea[data-ventana="ventana-msn"]`);
-  if (btnMsn) {
-    btnMsn.classList.add('titilando');
-  }
-
-  // 4. Add message to the actual chat history (silent add)
+  // 2. Agregar el mensaje al historial del chat
   const msnMessages = document.getElementById('msn-messages');
   if (msnMessages) {
     const msgDiv = document.createElement('div');
-    msgDiv.style.marginBottom = '8px';
-    msgDiv.innerHTML = `<span style="color:#0000FF; font-weight:bold;">Lucas dice:</span><br><span style="color:#000;">${welcomeMsg}</span>`;
+    msgDiv.style.marginTop = '10px';
+    msgDiv.style.marginBottom = '5px';
+    msgDiv.innerHTML = `<b style="color: #1a56bc;">Lucas Britos dice:</b><br><div style="margin-left:10px;">${welcomeMsg}</div>`;
     msnMessages.appendChild(msgDiv);
     msnMessages.scrollTop = msnMessages.scrollHeight;
   }
@@ -850,15 +844,49 @@ function iniciarSecuenciaBienvenidaMSN() {
   historialMSN.push({ role: "model", parts: [{ text: welcomeMsg }] });
 }
 
+// Función reutilizable para alertas de MSN
+function dispararAlertaMSN(mensaje, nombre = "Lucas Britos") {
+  const sonidoMSN = document.getElementById('sonido-msn');
+  const msnToast = document.getElementById('msn-toast');
+
+  // 1. Sonido
+  if (sonidoMSN) {
+    sonidoMSN.currentTime = 0;
+    sonidoMSN.play().catch(e => console.log("MSN Sound error:", e));
+  }
+
+  // 2. Notificación Toast (Cartelito al costado)
+  if (msnToast) {
+    const toastMsg = msnToast.querySelector('.msn-toast-msg');
+    const toastName = msnToast.querySelector('.msn-toast-name');
+    if (toastMsg) toastMsg.textContent = mensaje.substring(0, 45) + (mensaje.length > 45 ? "..." : "");
+    if (toastName) toastName.textContent = nombre;
+
+    msnToast.style.display = 'block';
+    setTimeout(() => {
+      msnToast.style.display = 'none';
+    }, 8000);
+  }
+
+  // 3. Titileo naranja en la barra de tareas
+  if (!document.querySelector(`.btn-tarea[data-ventana="ventana-msn"]`)) {
+    crearBotonTarea('ventana-msn');
+  }
+  const btnMsn = document.querySelector(`.btn-tarea[data-ventana="ventana-msn"]`);
+  if (btnMsn) {
+    btnMsn.classList.add('titilando');
+  }
+}
+
 function cerrarGlobo() {
   const balloon = document.getElementById('balloon-notif');
   if (balloon) {
     balloon.classList.remove('visible');
 
-    // Al cerrar el globo, esperar 5 segundos para iniciar el MSN
+    // Al cerrar el globo, esperar 3 segundos para iniciar el MSN
     setTimeout(() => {
       iniciarSecuenciaBienvenidaMSN();
-    }, 5000);
+    }, 3000);
   }
 }
 
