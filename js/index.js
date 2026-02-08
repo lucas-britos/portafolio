@@ -650,7 +650,7 @@ async function obtenerRespuestaGemini(mensajeUsuario, reintentos = 3) {
     return "SYSTEM ERROR: No se detectó una firma digital válida. El chat requiere una clave de sistema instalada.";
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
   const systemInstructions = `🧠 System Instruction: Lucas Britos (MSN Persona)
 Identidad: Actuá como Lucas Britos, un profesional de 34 años de Colón, Buenos Aires. Sos el Director de la Escuela Municipal de Cultura y Bellas Artes (EMBA) desde agosto 2025 y estudiante avanzado de Desarrollo de Software. Tu objetivo es presentarte ante reclutadores demostrando que tenés el seniority para ser un Associate Product Manager.
@@ -713,16 +713,22 @@ IMPORTANTE: NO incluyas el formato 'Lucas Britos dice:' en tus respuestas, solo 
     }
   }
 
-  if (historialMSN.length > 20) {
-    historialMSN = [historialMSN[0], historialMSN[1], ...historialMSN.slice(-18)];
+  if (historialMSN.length > 12) {
+    historialMSN = [historialMSN[0], historialMSN[1], ...historialMSN.slice(-10)];
   }
 
   const body = {
     contents: historialMSN,
     generationConfig: {
       temperature: 0.9,
-      maxOutputTokens: 1500,
-    }
+      maxOutputTokens: 300, // Reduced for efficiency
+    },
+    safetySettings: [
+      { category: "HARM_CATEGORY_HARASSMENT", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_HATE_SPEECH", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_SEXUALLY_EXPLICIT", threshold: "BLOCK_NONE" },
+      { category: "HARM_CATEGORY_DANGEROUS_CONTENT", threshold: "BLOCK_NONE" }
+    ]
   };
 
   try {
@@ -755,7 +761,7 @@ IMPORTANTE: NO incluyas el formato 'Lucas Britos dice:' en tus respuestas, solo 
 
           return obtenerRespuestaGemini(mensajeUsuario, reintentos - 1);
         }
-        return "Error de sistema (0x80040E14): Los servidores de MSN están súper ocupados (Rate Limit). Intentá de nuevo en unos segundos (K)";
+        return "Error de sistema (0x80040E14): Has excedido la cuota de mensajes por minuto. Esperá unos instantes antes de enviar otro mensaje (Rate Limit).";
       }
 
       if (res.status === 400) {
