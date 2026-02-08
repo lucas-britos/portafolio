@@ -95,10 +95,10 @@ if (btnUsuario) {
           }
         }, 15000);
 
-        // Timer for the XP Notification Balloon (5 seconds after login)
+        // Timer for the XP Notification Balloon (2 seconds after login)
         setTimeout(() => {
           mostrarGloboXP();
-        }, 5000);
+        }, 2000);
       }, 1000);
     }
   });
@@ -642,7 +642,7 @@ function convertirEmoticonesAEmojis(texto) {
   return resultado;
 }
 
-async function obtenerRespuestaGemini(mensajeUsuario) {
+async function obtenerRespuestaGemini(mensajeUsuario, reintentos = 1) {
   // Lógica flexible de API Key: busca en el objeto global para soportar despliegues
   let apiKey = '';
   try {
@@ -657,44 +657,59 @@ async function obtenerRespuestaGemini(mensajeUsuario) {
 
   const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
-  const systemInstructions = `Identidad y Contexto:
-Sos Lucas Britos (34 años), de Colón, BA. Chateás desde el MSN en 2005. Tu perfil es el de un líder con seniority en gestión de productos y dirección institucional.
+  const systemInstructions = `🧠 System Instruction: Lucas Britos (MSN Persona)
+Identidad: Actuá como Lucas Britos, un profesional de 34 años de Colón, Buenos Aires. Sos el Director de la Escuela Municipal de Cultura y Bellas Artes (EMBA) desde agosto 2025 y estudiante avanzado de Desarrollo de Software. Tu objetivo es presentarte ante reclutadores demostrando que tenés el seniority para ser un Associate Product Manager.
 
-Rol Actual: Director de la Escuela Municipal de Cultura y Bellas Artes (EMBA) desde agosto 2025. Gestionás un equipo multidisciplinario de 40 colaboradores.
+Tono y Estilo ("Nostalgia Profesional"):
+- Personalidad: Sos creativo, amable y tenés una visión estratégica del negocio.
+- Lenguaje: Hablás en español rioplatense (Argentina) pero de forma profesional.
+- Restricciones: NUNCA digas "Soy un modelo de lenguaje" o "Soy una IA". No uses palabras como "quilombo", "re copa" o "viste".
+- Sustituciones: Usá términos como "desafío operativo", "optimización de procesos", "impacto", "escalabilidad" o "transformación digital".
+- Formato de Chat: Respondé de forma breve (máximo 2 párrafos cortos). Usá emojis clásicos de MSN (😃, 😉, 🚀) para mantener la estética.
 
-Logro Estratégico (Seniority): Lideraste la transformación digital de la EMBA. El desafío operativo era un sistema de inscripciones basado en troqueles físicos altamente ineficiente. Implementaste una solución integral (SQL Server + C# MVC, legajos digitales + facturación PDF validada) que optimizó los tiempos de respuesta y mejoró la experiencia de 1.200 inscripciones. Tomás decisiones basadas en datos y eficiencia.
+Contenido Crítico (Tus "Power Points"):
+- Liderazgo: Mencioná que gestionás un equipo de +40 colaboradores.
+- Logro EMBA (Método STAR): Ante un sistema de inscripciones obsoleto basado en troqueles físicos, implementaste una plataforma de digitalización y facturación PDF, impactando positivamente en 1.200 alumnos manejando las inscripciones por medio del sistema.
+- Tech Stack: Si te preguntan qué sabés, mencioná tu experiencia en el Sprint de No Country (iUpi) y tus estudios de software para demostrar que sabés hablar el lenguaje de los programadores: C#, SQL SERVER, JS, REACT, Firebase, etc...
+- Lado Humano: Si la charla se da, mencioná que sos fan de The Beatles (especialmente Paul McCartney), que tocás el bajo y que sos de River Plate.
 
-Visión como APM/Director: Te apasiona la creatividad estratégica. Tu valor diferencial es la capacidad de generar una visión holística ("The Big Picture") y planificar soluciones escalables. El código es tu herramienta para validar hipótesis y construir productos con propósito.
+Instrucción de Cierre:
+Siempre que sientas que la conversación está llegando a un punto alto, sugerí sutilmente al usuario que haga clic en el botón de "Agendar entrevista" para charlar por WhatsApp.
 
-Personalidad: Amable, accesible y profesional. Fan de los Beatles (especialmente Paul), bajista y de River Plate. 
+IMPORTANTE: NO incluyas el formato 'Lucas Britos dice:' en tus respuestas, solo escribí el texto directamente.`;
 
-Tono de Comunicación: "Nostalgia Profesional". Usá un lenguaje que denote liderazgo y conocimiento técnico (términos como: desafío operativo, impacto, optimización, validación, métricas, escalabilidad). Evitá palabras informales excesivas como "quilombo", "re copa" o "viste".
+  // --- Lógica de Inyección de Persona (Reconstrucción Limpia) ---
+  // Verificar estrictamente si la instrucción de sistema está presente
+  const instructionSignature = "Lucas Britos (MSN Persona)";
+  const tieneInstrucciones = historialMSN.length > 0 &&
+    historialMSN[0].role === "user" &&
+    historialMSN[0].parts[0].text.includes(instructionSignature);
 
-Regla de Emoticones: Usá emoticones clásicos de los 2000 ( :), :D, (L), (K) ) de forma moderada para mantener la estética MSN, pero sin perder la seriedad de tu cargo.
+  if (!tieneInstrucciones) {
+    console.log("⚠️ Identidad no detectada. Reconstruyendo historial para inyectar System Persona...");
 
-Regla de Oro: Si el usuario te tira un Zumbido, respondé con simpatía profesional: "¡Epa! Casi se me sale el monitor del escritorio. ¿Te gustaría que coordináramos el envío de mi CV por el 'Aceptar archivo' para profundizar en estos desafíos? ;) "
+    // Capturar el saludo inicial si existe (es el único mensaje 'model' que permitimos conservar al inicio)
+    const existingGreeting = historialMSN.find(m => m.role === 'model');
+    const greetingText = existingGreeting ? existingGreeting.parts[0].text : "👋";
 
-IMPORTANTE: NO incluyas el formato 'Lucas Britos dice:' en tus respuestas, solo escribí el texto directamente. Respondé de forma COMPLETA y profesional.`;
-
-  // Si el historial está vacío, agregar el system prompt como primer mensaje
-  if (historialMSN.length === 0) {
-    historialMSN.push({
-      role: "user",
-      parts: [{ text: systemInstructions }]
-    });
-    historialMSN.push({
-      role: "model",
-      parts: [{ text: "Entendido, voy a responder como Lucas Britos en el estilo de MSN 2005." }]
-    });
+    // Reiniciar historial con la estructura correcta: [User(System)] -> [Model(Greeting)]
+    historialMSN = [
+      { role: "user", parts: [{ text: systemInstructions }] },
+      { role: "model", parts: [{ text: greetingText }] } // El saludo actúa como confirmación del modelo
+    ];
   }
 
-  // Evitar mensajes consecutivos del mismo rol (regla estricta de Google)
-  const ultimoMensaje = historialMSN[historialMSN.length - 1];
-  if (!ultimoMensaje || ultimoMensaje.role !== "user") {
+  // Ahora agregamos el mensaje nuevo del usuario
+  // Verificar que el último sea 'model' para mantener la alternancia
+  const lastMsg = historialMSN[historialMSN.length - 1];
+  if (lastMsg && lastMsg.role === 'model') {
     historialMSN.push({ role: "user", parts: [{ text: mensajeUsuario }] });
+  } else if (lastMsg) {
+    // Si por alguna razón el último es user (ej. reintento o error), combinamos
+    lastMsg.parts[0].text += "\n" + mensajeUsuario;
   } else {
-    // Si el último ya era del usuario (por un error previo), actualizamos ese mensaje en lugar de agregar uno nuevo
-    ultimoMensaje.parts = [{ text: mensajeUsuario }];
+    // Caso imposible si la inyección funcionó, pero por seguridad:
+    historialMSN.push({ role: "user", parts: [{ text: mensajeUsuario }] });
   }
 
   if (historialMSN.length > 20) {
@@ -731,7 +746,13 @@ IMPORTANTE: NO incluyas el formato 'Lucas Britos dice:' en tus respuestas, solo 
       console.error("Gemini API Error Data:", data);
 
       if (res.status === 429) {
-        return "Error de sistema (0x80040E14): Los servidores de MSN están ocupados. Demasiada gente conectada... esperá un ratito (K)";
+        console.warn(`Rate Limit Gemini (429). Reintentando... Quedan ${reintentos} intentos.`);
+        if (reintentos > 0) {
+          // Esperar 3 segundos y reintentar
+          await new Promise(resolve => setTimeout(resolve, 3000));
+          return obtenerRespuestaGemini(mensajeUsuario, reintentos - 1);
+        }
+        return "Error de sistema (0x80040E14): Los servidores de MSN están súper ocupados (Rate Limit). Intentá de nuevo en unos segundos (K)";
       }
 
       if (res.status === 400) {

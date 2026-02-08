@@ -1580,7 +1580,9 @@ body {
 }
 
 .msn-toast-logo {
-  height: 14px;
+  height: auto;
+  max-height: 18px;
+  width: auto;
 }
 
 /* SYSTEM TRAY (Bandeja de sistema) */
