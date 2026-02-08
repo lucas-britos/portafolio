@@ -650,7 +650,7 @@ async function obtenerRespuestaGemini(mensajeUsuario, reintentos = 3) {
     return "SYSTEM ERROR: No se detectó una firma digital válida. El chat requiere una clave de sistema instalada.";
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`;
 
   const systemInstructions = `🧠 System Instruction: Lucas Britos (MSN Persona)
 Identidad: Actuá como Lucas Britos, un profesional de 34 años de Colón, Buenos Aires. Sos el Director de la Escuela Municipal de Cultura y Bellas Artes (EMBA) desde agosto 2025 y estudiante avanzado de Desarrollo de Software. Tu objetivo es presentarte ante reclutadores demostrando que tenés el seniority para ser un Associate Product Manager.
