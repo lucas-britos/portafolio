@@ -96,7 +96,9 @@ if (btnUsuario) {
         }, 15000);
 
         // Timer for the XP Notification Balloon (2 seconds after login)
+        // Timer for the XP Notification Balloon (2 seconds after login)
         setTimeout(() => {
+          // Check sessionStorage to prevent repeated welcome messages in same session
           mostrarGloboXP();
         }, 2000);
       }, 1000);
@@ -519,21 +521,40 @@ if (msnZumbido) {
   msnZumbido.addEventListener('click', () => ejecutarZumbido());
 }
 
-// --- MSN Message Queue Logic ---
-let colaMensajesMSN = [];
-let procesandoCola = false;
+// --- MSN Chat Logic Strict (Rate Limited) ---
+let colaMensajesMSN = []; // This variable is no longer used for queueing, but kept for historical context if needed.
+let isChatBusy = false;
+let lastMessageTime = 0;
+let hasWelcomeMessageRun = false; // "Ref" for welcome message
 
 function enviarMensajeMSN() {
+  // Throttle removed by user request
+
+  // 2. Loading State Check
+  if (isChatBusy) return;
+
   const texto = msnInput.value.trim();
   if (!texto) return;
 
-  // Clear input immediately
+  // Start Processing
+  isChatBusy = true;
+  toggleInputState(false); // Disable inputs
+
+  // Clear input
   msnInput.value = '';
 
   // Append user message immediately
   const userMsgDiv = document.createElement('div');
   userMsgDiv.innerHTML = `<div style="margin-top: 10px; margin-bottom: 5px;"><b style="color: #bc1a1a;">Vos decís:</b></div><div style="margin-left: 10px;">${texto}</div>`;
   msnMessages.appendChild(userMsgDiv);
+  msnMessages.scrollTop = msnMessages.scrollHeight;
+
+  // Add "Typing..."
+  const typingDiv = document.createElement('div');
+  typingDiv.id = 'msn-typing';
+  typingDiv.style.cssText = 'color: #666; font-style: italic; margin-top: 10px; font-size: 11px;';
+  typingDiv.textContent = 'Lucas Britos calculando respuesta...';
+  msnMessages.appendChild(typingDiv);
   msnMessages.scrollTop = msnMessages.scrollHeight;
 
   // Tracking
@@ -544,34 +565,26 @@ function enviarMensajeMSN() {
     });
   }
 
-  // Push to queue and trigger processing
-  colaMensajesMSN.push(texto);
-  actualizarIndicadorEscribiendo();
-  procesarColaMensajes();
+  // Process Message
+  procesarMensajeUnico(texto);
 }
 
-function actualizarIndicadorEscribiendo() {
-  if (!document.getElementById('msn-typing')) {
-    const typingDiv = document.createElement('div');
-    typingDiv.id = 'msn-typing';
-    typingDiv.style.cssText = 'color: #666; font-style: italic; margin-top: 10px; font-size: 11px;';
-    typingDiv.textContent = 'Lucas Britos calculando respuesta...';
-    msnMessages.appendChild(typingDiv);
-    msnMessages.scrollTop = msnMessages.scrollHeight;
+function toggleInputState(enabled) {
+  if (msnInput) msnInput.disabled = !enabled;
+  if (msnEnviar) msnEnviar.disabled = !enabled;
+
+  if (msnEnviar) {
+    msnEnviar.style.opacity = enabled ? "1" : "0.5";
+    msnEnviar.style.cursor = enabled ? "pointer" : "wait";
   }
 }
 
-async function procesarColaMensajes() {
-  if (procesandoCola || colaMensajesMSN.length === 0) return;
-
-  procesandoCola = true;
-  const mensajeActual = colaMensajesMSN.shift();
-
+async function procesarMensajeUnico(texto) {
   try {
-    // Force a 2-second "thinking" delay for realism and primary rate limiting aid
+    // Artificial Delay for realism
     await new Promise(resolve => setTimeout(resolve, 2000));
 
-    const response = await obtenerRespuestaGemini(mensajeActual);
+    const response = await obtenerRespuestaGemini(texto);
 
     // Remove typing indicator
     const typing = document.getElementById('msn-typing');
@@ -596,22 +609,31 @@ async function procesarColaMensajes() {
     if (isMinimized || isNotFocused) {
       dispararAlertaMSN(response);
     }
+
+    // Update timestamp only on success to enforce cooldown on successful interactions
+    lastMessageTime = Date.now();
+
   } catch (error) {
-    console.error("Queue processing error:", error);
+    console.error("Chat error:", error);
     const typing = document.getElementById('msn-typing');
     if (typing) {
       typing.style.color = 'red';
       typing.textContent = 'Error: ' + error.message;
     }
   } finally {
-    procesandoCola = false;
+    // 3. Enforce 10s Throttle Visual Feedback
+    // We keep it busy/disabled for the remainder of the 10s if the API was fast, 
+    // or just release it if it took long enough?
+    // User asked: "Impedí que se envíen dos mensajes seguidos en menos de 10 segundos".
+    // Let's ensure the Input stays disabled until the cooldown is over? 
+    // No, better to enable it but let the 'alert' handle the check, or the user will think it's broken.
+    // However, user specifically asked to Disable "while isLoading is true".
 
-    // If there are more messages, process next with a Safety GAP
-    if (colaMensajesMSN.length > 0) {
-      actualizarIndicadorEscribiendo();
-      // Wait 4 seconds before processing the next message to strictly avoid Rate Limits
-      setTimeout(procesarColaMensajes, 4000);
-    }
+    isChatBusy = false;
+    toggleInputState(true);
+
+    // Focus input
+    if (msnInput) msnInput.focus();
   }
 }
 
@@ -872,15 +894,24 @@ function mostrarGloboXP() {
 }
 
 // --- MSN Greeting Sequence Logic ---
+let mensajeBienvenidaEnviado = false; // "Freno de mano"
+
 function iniciarSecuenciaBienvenidaMSN() {
-  // Evitar ejecuciones duplicadas si el globo se cierra varias veces
-  if (window.msnBienvenidaIniciada) return;
-  window.msnBienvenidaIniciada = true;
+  // Si ya se envió, cortamos acá
+  if (mensajeBienvenidaEnviado) return;
+
+  // Bloqueamos futuros envíos
+  mensajeBienvenidaEnviado = true;
+
+  console.log("🚀 Iniciando secuencia de bienvenida una sola vez.");
 
   const welcomeMsg = "¡Hola! Bienvenidos a mi portfolio estilo Windows XP.";
 
   // 1. Disparar la alerta completa (Sonido + Toast + Titileo)
   dispararAlertaMSN(welcomeMsg);
+
+  // Set flag in sessionStorage so it doesn't run again on reload
+  sessionStorage.setItem('msn_welcome_shown', 'true');
 
   // 2. Agregar el mensaje al historial del chat
   const msnMessages = document.getElementById('msn-messages');
