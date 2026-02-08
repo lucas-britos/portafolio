@@ -637,7 +637,7 @@ function convertirEmoticonesAEmojis(texto) {
   return resultado;
 }
 
-async function obtenerRespuestaGemini(mensajeUsuario, reintentos = 1) {
+async function obtenerRespuestaGemini(mensajeUsuario, reintentos = 3) {
   // Lógica flexible de API Key: busca en el objeto global para soportar despliegues
   let apiKey = '';
   try {
@@ -694,17 +694,23 @@ IMPORTANTE: NO incluyas el formato 'Lucas Britos dice:' en tus respuestas, solo 
     ];
   }
 
-  // Ahora agregamos el mensaje nuevo del usuario
-  // Verificar que el último sea 'model' para mantener la alternancia
-  const lastMsg = historialMSN[historialMSN.length - 1];
-  if (lastMsg && lastMsg.role === 'model') {
-    historialMSN.push({ role: "user", parts: [{ text: mensajeUsuario }] });
-  } else if (lastMsg) {
-    // Si por alguna razón el último es user (ej. reintento o error), combinamos
-    lastMsg.parts[0].text += "\n" + mensajeUsuario;
-  } else {
-    // Caso imposible si la inyección funcionó, pero por seguridad:
-    historialMSN.push({ role: "user", parts: [{ text: mensajeUsuario }] });
+  // Ahora agregamos el mensaje nuevo del usuario SOLO si no es un reintento
+  // (Si es reintento, el mensaje ya debería estar en el historial o lo pasamos recursivamente pero no queremos duplicarlo)
+  // Sin embargo, nuestra lógica actual reconstruye el historial si falla, así que asegurémonos.
+
+  // SOLUCIÓN: Verificamos si el último mensaje ya es igual al que intentamos enviar para no duplicar en reintentos
+  const ultimoMensaje = historialMSN[historialMSN.length - 1];
+  const mensajeYaExiste = ultimoMensaje && ultimoMensaje.role === 'user' && ultimoMensaje.parts[0].text.endsWith(mensajeUsuario);
+
+  if (!mensajeYaExiste) {
+    if (ultimoMensaje && ultimoMensaje.role === 'model') {
+      historialMSN.push({ role: "user", parts: [{ text: mensajeUsuario }] });
+    } else if (ultimoMensaje) {
+      // Si el último es user, combinamos (caso raro, pero posible si hubo error previo)
+      ultimoMensaje.parts[0].text += "\n" + mensajeUsuario;
+    } else {
+      historialMSN.push({ role: "user", parts: [{ text: mensajeUsuario }] });
+    }
   }
 
   if (historialMSN.length > 20) {
@@ -743,8 +749,10 @@ IMPORTANTE: NO incluyas el formato 'Lucas Britos dice:' en tus respuestas, solo 
       if (res.status === 429) {
         console.warn(`Rate Limit Gemini (429). Reintentando... Quedan ${reintentos} intentos.`);
         if (reintentos > 0) {
-          // Esperar 3 segundos y reintentar
-          await new Promise(resolve => setTimeout(resolve, 3000));
+          // Esperar 4 segundos (Backoff simple) y reintentar
+          await new Promise(resolve => setTimeout(resolve, 4000));
+          // Importante: No volvemos a llamar con mensajeUsuario porque ya está en el historial, 
+          // pero nuestra función lo espera. Lo pasamos igual y la lógica de arriba evitará duplicados.
           return obtenerRespuestaGemini(mensajeUsuario, reintentos - 1);
         }
         return "Error de sistema (0x80040E14): Los servidores de MSN están súper ocupados (Rate Limit). Intentá de nuevo en unos segundos (K)";
