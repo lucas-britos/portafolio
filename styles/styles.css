@@ -1452,7 +1452,7 @@ body {
   border: 1px solid #7a96b0;
   border-radius: 6px;
   box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.4);
-  z-index: 2000;
+  z-index: 100;
   display: none;
   font-family: 'Tahoma', sans-serif;
   animation: msn-slide-up 0.5s ease-out;
