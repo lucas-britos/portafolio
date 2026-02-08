@@ -99,11 +99,6 @@ if (btnUsuario) {
         setTimeout(() => {
           mostrarGloboXP();
         }, 5000);
-
-        // Timer for the MSN Welcome Message (30 seconds after login)
-        setTimeout(() => {
-          iniciarSecuenciaBienvenidaMSN();
-        }, 30000);
       }, 1000);
     }
   });
@@ -809,6 +804,10 @@ function mostrarGloboXP() {
 
 // --- MSN Greeting Sequence Logic ---
 function iniciarSecuenciaBienvenidaMSN() {
+  // Evitar ejecuciones duplicadas si el globo se cierra varias veces
+  if (window.msnBienvenidaIniciada) return;
+  window.msnBienvenidaIniciada = true;
+
   const sonidoMSN = document.getElementById('sonido-msn');
   const msnToast = document.getElementById('msn-toast');
   const welcomeMsg = "¡Hola! Bienvenidos a mi portfolio estilo Windows XP.";
@@ -855,6 +854,11 @@ function cerrarGlobo() {
   const balloon = document.getElementById('balloon-notif');
   if (balloon) {
     balloon.classList.remove('visible');
+
+    // Al cerrar el globo, esperar 5 segundos para iniciar el MSN
+    setTimeout(() => {
+      iniciarSecuenciaBienvenidaMSN();
+    }, 5000);
   }
 }
 
