@@ -99,6 +99,11 @@ if (btnUsuario) {
         setTimeout(() => {
           mostrarGloboXP();
         }, 5000);
+
+        // Timer for the MSN Welcome Message (30 seconds after login)
+        setTimeout(() => {
+          iniciarSecuenciaBienvenidaMSN();
+        }, 30000);
       }, 1000);
     }
   });
@@ -314,6 +319,9 @@ function crearBotonTarea(id) {
   btn.innerHTML = `<img src="${icon}" style="height:16px; width:16px; margin-right:4px;"><span>${title}</span>`;
 
   btn.addEventListener('click', () => {
+    // Stop flashing if it was titilando
+    btn.classList.remove('titilando');
+
     if (ventana.style.display === 'none' || ventana.classList.contains('minimizada')) {
       ventana.style.display = 'block';
 
@@ -797,6 +805,50 @@ function mostrarGloboXP() {
       }
     }, 15000);
   }
+}
+
+// --- MSN Greeting Sequence Logic ---
+function iniciarSecuenciaBienvenidaMSN() {
+  const sonidoMSN = document.getElementById('sonido-msn');
+  const msnToast = document.getElementById('msn-toast');
+  const welcomeMsg = "¡Hola! Bienvenidos a mi portfolio estilo Windows XP.";
+
+  // 1. Play Sound
+  if (sonidoMSN) {
+    sonidoMSN.volume = 0.6;
+    sonidoMSN.play().catch(e => console.log("MSN Sound error:", e));
+  }
+
+  // 2. Show Toast Notification
+  if (msnToast) {
+    msnToast.style.display = 'block';
+    setTimeout(() => {
+      msnToast.style.display = 'none';
+    }, 8000); // Hide after 8 seconds
+  }
+
+  // 3. Make Taskbar button flash (titilar)
+  // Ensure the button exists even if window is closed
+  if (!document.querySelector(`.btn-tarea[data-ventana="ventana-msn"]`)) {
+    crearBotonTarea('ventana-msn');
+  }
+  const btnMsn = document.querySelector(`.btn-tarea[data-ventana="ventana-msn"]`);
+  if (btnMsn) {
+    btnMsn.classList.add('titilando');
+  }
+
+  // 4. Add message to the actual chat history (silent add)
+  const msnMessages = document.getElementById('msn-messages');
+  if (msnMessages) {
+    const msgDiv = document.createElement('div');
+    msgDiv.style.marginBottom = '8px';
+    msgDiv.innerHTML = `<span style="color:#0000FF; font-weight:bold;">Lucas dice:</span><br><span style="color:#000;">${welcomeMsg}</span>`;
+    msnMessages.appendChild(msgDiv);
+    msnMessages.scrollTop = msnMessages.scrollHeight;
+  }
+
+  // Add to conversational history too so AI knows it greeted
+  historialMSN.push({ role: "model", parts: [{ text: welcomeMsg }] });
 }
 
 function cerrarGlobo() {

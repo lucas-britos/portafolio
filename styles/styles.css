@@ -1426,6 +1426,92 @@ body {
   font-weight: bold;
 }
 
+/* Efecto titilando (Naranja MSN) */
+.btn-tarea.titilando {
+  animation: titilar-naranja 1s infinite alternate;
+}
+
+@keyframes titilar-naranja {
+  from {
+    background: linear-gradient(to bottom, #3980f4 0%, #2f72e6 100%);
+  }
+
+  to {
+    background: linear-gradient(to bottom, #ff9d00 0%, #ff6a00 100%);
+    color: white;
+  }
+}
+
+/* NOTIFICACION MSN (TOAST) */
+.msn-toast {
+  position: fixed;
+  bottom: 45px;
+  right: 20px;
+  width: 200px;
+  background: linear-gradient(to bottom, #ffffff 0%, #dcecf9 100%);
+  border: 1px solid #4a6b9a;
+  border-radius: 5px;
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  z-index: 2000;
+  display: none;
+  overflow: hidden;
+  font-family: 'Tahoma', sans-serif;
+  animation: msn-slide-up 0.5s ease-out;
+}
+
+@keyframes msn-slide-up {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+.msn-toast-header {
+  height: 24px;
+  background: linear-gradient(to bottom, #0058e6 0%, #0049b0 100%);
+  color: white;
+  font-size: 11px;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  padding: 0 8px;
+  justify-content: space-between;
+}
+
+.msn-toast-body {
+  padding: 10px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.msn-toast-icon {
+  width: 32px;
+  height: 32px;
+}
+
+.msn-toast-content {
+  flex: 1;
+}
+
+.msn-toast-name {
+  font-size: 11px;
+  font-weight: bold;
+  color: #0b1f3c;
+  display: block;
+}
+
+.msn-toast-msg {
+  font-size: 10px;
+  color: #444;
+  display: block;
+}
+
 /* SYSTEM TRAY (Bandeja de sistema) */
 .system-tray {
   background-color: #0b9aee;
