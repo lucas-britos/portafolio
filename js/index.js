@@ -1,5 +1,5 @@
 // --- Global Variables and Base Elements ---
-const LUCAS_API_KEY = 'AIzaSyDEgMylFTyjcKsbKJZZGnoBZLaf-UTGkgo';
+const LUCAS_API_KEY = ''; // CLEARING FOR SECURITY. User must rotate and set this securely.
 let historialMSN = [];
 const enlacePapelera = document.getElementById('papelera-enlace');
 const enlaceProyectos = document.getElementById("proyects-enlace");
