@@ -650,7 +650,7 @@ async function obtenerRespuestaGemini(mensajeUsuario, reintentos = 3) {
     return "SYSTEM ERROR: No se detectó una firma digital válida. El chat requiere una clave de sistema instalada.";
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite-preview-02-05:generateContent?key=${apiKey}`;
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
   const systemInstructions = `🧠 System Instruction: Lucas Britos (MSN Persona)
 Identidad: Actuá como Lucas Britos, un profesional de 34 años de Colón, Buenos Aires. Sos el Director de la Escuela Municipal de Cultura y Bellas Artes (EMBA) desde agosto 2025 y estudiante avanzado de Desarrollo de Software. Tu objetivo es presentarte ante reclutadores demostrando que tenés el seniority para ser un Associate Product Manager.
@@ -749,10 +749,10 @@ IMPORTANTE: NO incluyas el formato 'Lucas Britos dice:' en tus respuestas, solo 
       if (res.status === 429) {
         console.warn(`Rate Limit Gemini (429). Reintentando... Quedan ${reintentos} intentos.`);
         if (reintentos > 0) {
-          // Esperar 4 segundos (Backoff simple) y reintentar
-          await new Promise(resolve => setTimeout(resolve, 4000));
-          // Importante: No volvemos a llamar con mensajeUsuario porque ya está en el historial, 
-          // pero nuestra función lo espera. Lo pasamos igual y la lógica de arriba evitará duplicados.
+          // Exponential Backoff: 4s, 8s, 12s...
+          const waitTime = 4000 * (4 - reintentos);
+          await new Promise(resolve => setTimeout(resolve, waitTime));
+
           return obtenerRespuestaGemini(mensajeUsuario, reintentos - 1);
         }
         return "Error de sistema (0x80040E14): Los servidores de MSN están súper ocupados (Rate Limit). Intentá de nuevo en unos segundos (K)";
