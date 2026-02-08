@@ -537,6 +537,14 @@ function enviarMensajeMSN() {
   msnMessages.appendChild(typingDiv);
   msnMessages.scrollTop = msnMessages.scrollHeight;
 
+  // Tracking: Evento de envío de mensaje
+  if (typeof gtag === 'function') {
+    gtag('event', 'msn_message_sent', {
+      'event_category': 'interaction',
+      'event_label': 'MSN Chat'
+    });
+  }
+
   // Simulate delay and fetch Gemini response
   setTimeout(async () => {
     try {
@@ -616,16 +624,16 @@ function convertirEmoticonesAEmojis(texto) {
 }
 
 async function obtenerRespuestaGemini(mensajeUsuario) {
-  // Safe check for global variable
+  // Lógica flexible de API Key: busca en el objeto global para soportar despliegues
   let apiKey = '';
   try {
-    apiKey = LUCAS_API_KEY;
+    apiKey = window.LUCAS_API_KEY || LUCAS_API_KEY;
   } catch (e) {
-    return "SYSTEM ERROR: La variable LUCAS_API_KEY no está definida. Verificá que js/config.js se esté cargando correctamente.";
+    console.warn("API Key no encontrada en variables globales, intentando fallback...");
   }
 
   if (!apiKey || apiKey === 'TU_API_KEY_ACA') {
-    return "SYSTEM ERROR: Se ha producido una excepción grave en 0x0028:C0011E36. El chat no puede continuar sin una clave de sistema válida.";
+    return "SYSTEM ERROR: No se detectó una firma digital válida. El chat requiere una clave de sistema instalada.";
   }
 
   const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
