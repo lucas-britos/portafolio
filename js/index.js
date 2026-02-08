@@ -867,7 +867,7 @@ function ejecutarZumbido() {
   if (msnMessages) {
     const buzzMsg = document.createElement('div');
     buzzMsg.innerHTML = `
-      <div style="font-weight: bold; font-style: italic; color: #555; margin: 10px 0;">
+      <div style="font-style: italic; color: #555; margin: 10px 0;">
         Has enviado un zumbido.
       </div>
       <hr style="border: 0; border-top: 1px solid #ccc; margin-bottom: 10px;">
