@@ -1,5 +1,4 @@
-// --- Global Variables and Base Elements ---
-const LUCAS_API_KEY = ''; // CLEARING FOR SECURITY. User must rotate and set this securely.
+// LUCAS_API_KEY is now loaded from js/config.js (ignored by git)
 let historialMSN = [];
 const enlacePapelera = document.getElementById('papelera-enlace');
 const enlaceProyectos = document.getElementById("proyects-enlace");
