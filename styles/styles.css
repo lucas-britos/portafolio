@@ -1442,21 +1442,21 @@ body {
   }
 }
 
-/* NOTIFICACION MSN (TOAST) */
+/* NOTIFICACION MSN (TOAST) - High Fidelity Version */
 .msn-toast {
   position: fixed;
   bottom: 45px;
   right: 20px;
-  width: 200px;
-  background: linear-gradient(to bottom, #ffffff 0%, #dcecf9 100%);
-  border: 1px solid #4a6b9a;
-  border-radius: 5px;
-  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  width: 240px;
+  background: linear-gradient(to bottom, #f0f7ff 0%, #d4e7f9 100%);
+  border: 1px solid #7a96b0;
+  border-radius: 6px;
+  box-shadow: 2px 4px 10px rgba(0, 0, 0, 0.4);
   z-index: 2000;
   display: none;
-  overflow: hidden;
   font-family: 'Tahoma', sans-serif;
   animation: msn-slide-up 0.5s ease-out;
+  padding-bottom: 5px;
 }
 
 @keyframes msn-slide-up {
@@ -1472,27 +1472,84 @@ body {
 }
 
 .msn-toast-header {
-  height: 24px;
-  background: linear-gradient(to bottom, #0058e6 0%, #0049b0 100%);
-  color: white;
-  font-size: 11px;
-  font-weight: bold;
+  height: 22px;
+  background: linear-gradient(to bottom, #fafdff 0%, #e2eff9 100%);
+  border-bottom: 1px solid #bcd1e6;
+  border-radius: 6px 6px 0 0;
   display: flex;
   align-items: center;
-  padding: 0 8px;
-  justify-content: space-between;
+  padding: 0 5px;
+  color: #0b1f3c;
+  font-size: 11px;
+}
+
+.msn-toast-header-icon {
+  width: 14px;
+  height: 14px;
+  margin-right: 4px;
+}
+
+.msn-toast-close {
+  margin-left: auto;
+  width: 16px;
+  height: 16px;
+  background: linear-gradient(to bottom, #e07f68 0%, #d84228 100%);
+  border: 1px solid #fff;
+  border-radius: 2px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  cursor: pointer;
+  font-weight: bold;
+}
+
+.msn-toast-options {
+  text-align: right;
+  font-size: 10px;
+  color: #003399;
+  padding: 2px 8px 0 0;
+  cursor: pointer;
 }
 
 .msn-toast-body {
-  padding: 10px;
+  padding: 5px 10px 10px 10px;
   display: flex;
-  gap: 8px;
+  gap: 12px;
   align-items: center;
 }
 
+/* Glassy XP frame for avatar */
+.msn-toast-avatar-frame {
+  width: 58px;
+  height: 58px;
+  background: white;
+  border: 1px solid #8ba1bd;
+  border-radius: 8px;
+  padding: 2px;
+  position: relative;
+  box-shadow: inset 0 0 5px rgba(0, 0, 0, 0.1);
+  flex-shrink: 0;
+}
+
+.msn-toast-avatar-frame::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.4) 0%, rgba(255, 255, 255, 0) 50%);
+  pointer-events: none;
+  border-radius: 8px;
+}
+
 .msn-toast-icon {
-  width: 32px;
-  height: 32px;
+  width: 100%;
+  height: 100%;
+  border-radius: 5px;
+  object-fit: cover;
 }
 
 .msn-toast-content {
@@ -1501,15 +1558,28 @@ body {
 
 .msn-toast-name {
   font-size: 11px;
-  font-weight: bold;
-  color: #0b1f3c;
+  font-weight: normal;
+  color: #000;
   display: block;
+  line-height: 1.2;
 }
 
 .msn-toast-msg {
-  font-size: 10px;
-  color: #444;
+  font-size: 11px;
+  color: #000;
   display: block;
+  line-height: 1.2;
+}
+
+.msn-toast-footer {
+  display: flex;
+  justify-content: flex-end;
+  padding-right: 8px;
+  margin-top: -5px;
+}
+
+.msn-toast-logo {
+  height: 14px;
 }
 
 /* SYSTEM TRAY (Bandeja de sistema) */
