@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MSN Toolbar Replica V2 - 3D Wave</title>
+    <style>
+        body {
+            background: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Tahoma, sans-serif;
+            margin: 0;
+        }
+
+        .preview-container {
+            width: 600px;
+            background: #fff;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- MSN TOOLBAR COMPONENT --- */
+        .msn-toolbar {
+            height: 52px;
+            position: relative;
+            display: flex;
+            align-items: center;
+            padding-left: 10px;
+            /* El fondo general detrás de todo */
+            background: #eef3fa;
+            border-bottom: 1px solid #9cb4d4;
+            overflow: hidden;
+        }
+
+        /* 
+           LA "OLA" 3D (MAIN ACTIONS CONTAINER)
+           Esta es la pieza clave. Un contenedor con gradiente "plástico" que termina en curva.
+        */
+        .msn-wave-container {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            position: relative;
+            z-index: 2;
+            padding-right: 40px;
+            /* Espacio para la curva final */
+
+            /* El gradiente 3D "Luna" clásico */
+            background: linear-gradient(to bottom,
+                    #ffffff 0%,
+                    #f0f5fd 40%,
+                    #dcecff 50%,
+                    #dcecff 100%);
+
+            /* Sombra suave para dar volumen sobre el fondo */
+            box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+
+            /* La forma curva usando clip-path o border-radius */
+            /* En este caso, simularemos la curva con un pseudo-elemento para máxima compatibilidad y suavidad */
+        }
+
+        /* La terminación curva (The Wave Tail) */
+        .msn-wave-container::after {
+            content: '';
+            position: absolute;
+            right: -25px;
+            /* Proyectarse hacia la derecha */
+            top: 0;
+            bottom: 0;
+            width: 50px;
+            background: inherit;
+            /* Heredar el mismo gradiente 3D */
+            /* La magia de la curva: */
+            border-top-right-radius: 60px;
+            border-bottom-right-radius: 0;
+            transform: skewX(15deg);
+            /* Inclinar para suavizar la caída */
+            box-shadow: 3px 0 5px -1px rgba(0, 0, 0, 0.15);
+            /* Sombra en la curva */
+            z-index: -1;
+            border-right: 1px solid rgba(255, 255, 255, 0.6);
+            /* Brillo en el borde */
+        }
+
+        /* Left Actions Group */
+        .msn-actions-left {
+            display: flex;
+            align-items: center;
+            gap: 0px;
+            z-index: 3;
+            /* Sobre la ola */
+        }
+
+        .msn-btn-tool {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #0b1f3c;
+            font-size: 10px;
+            font-family: Tahoma, sans-serif;
+            min-width: 50px;
+            height: 48px;
+            border-radius: 3px;
+            position: relative;
+            transition: all 0.1s;
+        }
+
+        /* Hover Effect "Glassy" */
+        .msn-btn-tool:hover {
+            background: linear-gradient(to bottom, #fff 0%, #eef3fa 100%);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.8), 0 1px 2px rgba(0, 0, 0, 0.2);
+            transform: translateY(-1px);
+        }
+
+        .msn-btn-tool img {
+            width: 26px;
+            height: 26px;
+            margin-bottom: 2px;
+            object-fit: contain;
+            /* Sombra realística del icono */
+            filter: drop-shadow(0 3px 2px rgba(0, 0, 0, 0.25));
+        }
+
+        /* Secondary Icons (Block/Paint) - Sits behind/after the wave */
+        .msn-actions-secondary {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-left: 10px;
+            /* Separación después de la ola */
+            z-index: 1;
+            padding-left: 15px;
+        }
+
+        /* Contenedor circular blanco para los iconos secundarios (como en la ref azul) */
+        .btn-secondary-wrapper {
+            background: linear-gradient(to bottom, #fff 0%, #f1f1f1 100%);
+            border: 1px solid #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+            border-radius: 50%;
+            /* Circulares */
+            width: 26px;
+            height: 26px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+        }
+
+        .btn-secondary-wrapper:hover {
+            filter: brightness(1.1);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .msn-small-icon {
+            width: 16px;
+            height: 16px;
+        }
+
+        /* Branding (Right) */
+        .msn-branding {
+            margin-left: auto;
+            /* Empujar a la derecha */
+            padding-right: 15px;
+            display: flex;
+            align-items: center;
+        }
+
+        .msn-branding img {
+            height: 18px;
+            filter: drop-shadow(0 1px 1px rgba(255, 255, 255, 0.8));
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="preview-container">
+        <!-- HEADER PLACEHOLDER -->
+        <div style="height:30px; background:linear-gradient(to bottom, #0058E6, #0049b0); border-radius: 5px 5px 0 0;">
+        </div>
+        <div style="height:22px; background:#ECE9D8; border-bottom:1px solid #d4d0c8;"></div>
+
+        <!-- *** COMPONENTE TARGET: TOOLBAR V2 *** -->
+        <div class="msn-toolbar">
+
+            <!-- EL CONTENEDOR "OLA" (Wave) -->
+            <div class="msn-wave-container">
+                <div class="msn-actions-left">
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-invitar.png" alt="Invitar"
+                            onerror="this.src='https://placehold.co/28x28/png?text=Inv'">
+                        <span>Invitar</span>
+                    </a>
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-archivos.png" alt="Archivos"
+                            onerror="this.src='https://placehold.co/28x28/png?text=Arc'">
+                        <span>Archivos</span>
+                    </a>
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-camara.png" alt="Cámara"
+                            onerror="this.src='https://placehold.co/28x28/png?text=Cam'">
+                        <span>Cámara</span>
+                    </a>
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-audio.png" alt="Audio"
+                            onerror="this.src='https://placehold.co/28x28/png?text=Aud'">
+                        <span>Audio</span>
+                    </a>
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-actividades.png" alt="Actividades"
+                            onerror="this.src='https://placehold.co/28x28/png?text=Act'">
+                        <span>Actividades</span>
+                    </a>
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-juegos.png" alt="Juegos"
+                            onerror="this.src='https://placehold.co/28x28/png?text=Jue'">
+                        <span>Juegos</span>
+                    </a>
+                </div>
+            </div> <!-- Fin Wave Container -->
+
+            <!-- Secondary Icons (Fuera de la ola) -->
+            <div class="msn-actions-secondary">
+                <div class="btn-secondary-wrapper" title="Bloquear">
+                    <img src="images/msn-icon-block.png" class="msn-small-icon" alt="Block"
+                        onerror="this.src='https://placehold.co/16x16/png?text=B'">
+                </div>
+                <div class="btn-secondary-wrapper" title="Manuscrito">
+                    <img src="images/msn-icon-pen.png" class="msn-small-icon" alt="Scribble"
+                        onerror="this.src='https://placehold.co/16x16/png?text=P'">
+                </div>
+            </div>
+
+            <!-- MSN Logo -->
+            <div class="msn-branding">
+                <img src="images/msn-butterfly.png" alt="msn"
+                    onerror="this.src='https://placehold.co/40x18/png?text=msn'">
+            </div>
+        </div>
+        <!-- *** END COMPONENT *** -->
+
+        <div style="height:200px; background:#f0f6ff;"></div>
+    </div>
+
+</body>
+
+</html>

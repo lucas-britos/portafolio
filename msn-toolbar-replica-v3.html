@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MSN Toolbar Replica V3 - SVG Precision</title>
+    <style>
+        body {
+            background: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Tahoma, sans-serif;
+            margin: 0;
+        }
+
+        .preview-container {
+            width: 600px;
+            background: #fff;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- MSN TOOLBAR COMPONENT --- */
+        .msn-toolbar-container {
+            position: relative;
+            height: 60px;
+            /* Altura total incluyendo la caída */
+            width: 100%;
+            background: #eef3fa;
+            /* Fondo general azul pálido detrás */
+            overflow: hidden;
+            border-bottom: 1px solid #9cb4d4;
+        }
+
+        /* SVG BACKGROUND LAYER */
+        .msn-svg-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+        }
+
+        /* ICON LAYERS */
+        .msn-icons-layer {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: flex-start;
+            /* Alinear arriba */
+            height: 100%;
+            padding-left: 5px;
+        }
+
+        /* Main Icons Container */
+        .msn-main-icons {
+            display: flex;
+            gap: 2px;
+            margin-top: 2px;
+            /* Pequeño ajuste vertical */
+        }
+
+        .msn-btn-tool {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #0b1f3c;
+            /* Azul oscuro */
+            font-size: 10px;
+            font-family: Tahoma, sans-serif;
+            width: 54px;
+            padding-top: 4px;
+            padding-bottom: 4px;
+            border-radius: 3px;
+            transition: all 0.1s;
+        }
+
+        .msn-btn-tool:hover {
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.4) 100%);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+        }
+
+        .msn-btn-tool img {
+            width: 28px;
+            height: 28px;
+            margin-bottom: 2px;
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
+            /* Sombra para volumen */
+        }
+
+        /* Secondary Icons (Block/Paint) positioned relative to the wave */
+        .msn-secondary-icons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 55px;
+            /* Espacio después de la ola */
+            margin-top: 15px;
+            /* Bajarlos un poco visualmente */
+        }
+
+        .btn-secondary-wrapper {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            background: linear-gradient(to bottom, #fff 0%, #f0f0f0 100%);
+            border: 1px solid #fff;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .btn-secondary-wrapper:hover {
+            filter: brightness(1.05);
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.25);
+        }
+
+        .msn-small-icon {
+            width: 14px;
+            height: 14px;
+        }
+
+        .msn-branding {
+            position: absolute;
+            right: 15px;
+            top: 20px;
+            z-index: 2;
+        }
+
+        .msn-branding img {
+            height: 18px;
+            filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.8));
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="preview-container">
+        <!-- HEADER PLACEHOLDER -->
+        <div style="height:30px; background:linear-gradient(to bottom, #0058E6, #0049b0); border-radius: 5px 5px 0 0;">
+        </div>
+        <div style="height:22px; background:#ECE9D8; border-bottom:1px solid #d4d0c8;"></div>
+
+        <!-- *** TOOLBAR V3 (SVG BASED) *** -->
+        <div class="msn-toolbar-container">
+
+            <!-- EL FONDO SVG CON LA FORMA EXACTA Y GRADIENTES -->
+            <svg class="msn-svg-bg" viewBox="0 0 600 60" preserveAspectRatio="none">
+                <defs>
+                    <!-- Gradiente Plástico 3D para la barra principal -->
+                    <linearGradient id="plasticGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#ffffff" />
+                        <stop offset="40%" stop-color="#f2f7fd" />
+                        <stop offset="50%" stop-color="#dcecff" /> <!-- Highlight line -->
+                        <stop offset="100%" stop-color="#d0e4f7" />
+                    </linearGradient>
+
+                    <!-- Sombra sutil -->
+                    <filter id="dropShadow" x="-10%" y="-10%" width="120%" height="120%">
+                        <feGaussianBlur in="SourceAlpha" stdDeviation="2" />
+                        <feOffset dx="1" dy="1" result="offsetblur" />
+                        <feComponentTransfer>
+                            <feFuncA type="linear" slope="0.3" />
+                        </feComponentTransfer>
+                        <feMerge>
+                            <feMergeNode />
+                            <feMergeNode in="SourceGraphic" />
+                        </feMerge>
+                    </filter>
+                </defs>
+
+                <!-- 
+                   EL CAMINO (PATH) QUE DIBUJA LA OLA 
+                   Empieza arriba izquierda -> avanza hasta pixel 350 -> 
+                   Curva Bezier hacia abajo y derecha -> avanza hasta el final ->
+                   cierra abajo y vuelve.
+                -->
+                <path d="M0,0 L360,0 C380,0 390,5 400,20 C410,35 415,45 450,45 L600,45 L600,60 L0,60 Z"
+                    fill="url(#plasticGradient)" stroke="rgba(255,255,255,0.5)" stroke-width="1"
+                    filter="url(#dropShadow)" />
+            </svg>
+
+            <!-- CONTENIDO (ICONOS) -->
+            <div class="msn-icons-layer">
+                <!-- Main Icons (sits on the high part of the wave) -->
+                <div class="msn-main-icons">
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-invitar.png" alt="Invitar"
+                            onerror="this.src='https://placehold.co/28x28/png?text=Inv'">
+                        <span>Invitar</span>
+                    </a>
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-archivos.png" alt="Archivos"
+                            onerror="this.src='https://placehold.co/28x28/png?text=Arc'">
+                        <span>Archivos</span>
+                    </a>
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-camara.png" alt="Cámara"
+                            onerror="this.src='https://placehold.co/28x28/png?text=Cam'">
+                        <span>Cámara</span>
+                    </a>
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-audio.png" alt="Audio"
+                            onerror="this.src='https://placehold.co/28x28/png?text=Aud'">
+                        <span>Audio</span>
+                    </a>
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-juegos.png" alt="Juegos"
+                            onerror="this.src='https://placehold.co/28x28/png?text=Jue'">
+                        <span>Juegos</span>
+                    </a>
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-actividades.png" alt="Actividades"
+                            onerror="this.src='https://placehold.co/28x28/png?text=Act'">
+                        <span>Actividades</span>
+                    </a>
+                </div>
+
+                <!-- Secondary Icons (sits after the wave drops) -->
+                <div class="msn-secondary-icons">
+                    <div class="btn-secondary-wrapper" title="Bloquear">
+                        <img src="images/msn-icon-block.png" class="msn-small-icon" alt="Block"
+                            onerror="this.src='https://placehold.co/16x16/png?text=B'">
+                    </div>
+                    <div class="btn-secondary-wrapper" title="Manuscrito">
+                        <img src="images/msn-icon-pen.png" class="msn-small-icon" alt="Scribble"
+                            onerror="this.src='https://placehold.co/16x16/png?text=P'">
+                    </div>
+                </div>
+            </div>
+
+            <!-- LOGO -->
+            <div class="msn-branding">
+                <img src="images/msn-butterfly.png" alt="msn"
+                    onerror="this.src='https://placehold.co/40x18/png?text=msn'">
+            </div>
+
+        </div>
+        <!-- *** END COMPONENT *** -->
+
+        <div style="height:200px; background:#f0f6ff;"></div>
+    </div>
+
+</body>
+
+</html>

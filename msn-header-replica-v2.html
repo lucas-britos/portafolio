@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MSN Header V2 - High Fidelity</title>
+    <style>
+        body {
+            background: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Tahoma, sans-serif;
+            margin: 0;
+        }
+
+        /* --- CONTENEDOR PRINCIPAL --- */
+        .msn-window {
+            width: 600px;
+            background: #fff;
+            border-radius: 8px 8px 0 0;
+            overflow: hidden;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+        }
+
+        /* --- HEADER --- */
+        .msn-title-bar {
+            /* Luna Blue Gradient: Horizontal, vibrant blue */
+            background: linear-gradient(to bottom, #0058E6 0%, #0058E6 5%, #0050d2 100%);
+            /* Actually, looking at the image, it's very flat blue or subtle horizontal gradient. 
+               Let's try a safe vibrant blue gradient consistent with XP. */
+            background: linear-gradient(to bottom, #0d60e6 0%, #0449cd 100%);
+
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 5px 0 5px;
+            border-bottom: 1px solid #001f9c;
+            /* Dark blue separator */
+            position: relative;
+        }
+
+        /* --- IDENTIDAD (IZQUIERDA) --- */
+        .msn-identity {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            padding-left: 2px;
+        }
+
+        .msn-icon-img {
+            width: 16px;
+            height: 16px;
+            /* Usar un placeholder si no existe la imagen real */
+            background-color: transparent;
+            display: block;
+        }
+
+        .msn-title-text {
+            color: #fff;
+            font-size: 13px;
+            font-weight: bold;
+            /* La sombra clásica de texto en XP sobre fondo oscuro */
+            text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.4);
+            letter-spacing: 0.3px;
+        }
+
+        /* --- CONTROLES (DERECHA) --- */
+        .msn-controls {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            /* Espacio muy pequeño entre botones */
+        }
+
+        .msn-btn {
+            width: 21px;
+            height: 21px;
+            border: 1px solid #fff;
+            border-radius: 3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            position: relative;
+            box-shadow: inset 0 0 2px rgba(255, 255, 255, 0.4);
+            /* Brillo interior */
+        }
+
+        /* Botón AZUL (Min/Max) */
+        .msn-btn-blue {
+            /* Gradiente azul brillante XP style */
+            background: linear-gradient(to bottom, #428bfa 0%, #0855d0 100%);
+            border-color: rgba(255, 255, 255, 0.7);
+        }
+
+        /* Botón ROJO (Cerrar) */
+        .msn-btn-red {
+            /* Gradiente rojo anaranjado XP style */
+            background: linear-gradient(to bottom, #e36a4f 0%, #c52914 100%);
+            border-color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* Iconografía CSS pura para nitidez */
+
+        /* Minimizar: Guion bajo blanco */
+        .icon-min {
+            width: 7px;
+            height: 2px;
+            background: white;
+            position: absolute;
+            bottom: 5px;
+            left: 6px;
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* Maximizar: Cuadrado blanco */
+        .icon-max {
+            width: 9px;
+            height: 8px;
+            border: 2px solid white;
+            border-top-width: 3px;
+            /* XP maximizar tiene el tope más grueso */
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* Cerrar: X blanca */
+        .icon-close::before,
+        .icon-close::after {
+            content: '';
+            position: absolute;
+            width: 11px;
+            height: 2px;
+            background: white;
+            top: 8px;
+            left: 4px;
+            box-shadow: 0 1px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        .icon-close::before {
+            transform: rotate(45deg);
+        }
+
+        .icon-close::after {
+            transform: rotate(-45deg);
+        }
+
+
+        /* Hover Effects */
+        .msn-btn:hover {
+            filter: brightness(1.15);
+            /* Iluminar al pasar el mouse */
+        }
+
+        .msn-btn:active {
+            filter: brightness(0.95);
+            transform: translateY(1px);
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="msn-window">
+        <div class="msn-title-bar">
+            <!-- Left Side -->
+            <div class="msn-identity">
+                <!-- Icono MSN (simulado con imagen local o placeholder) -->
+                <img src="images/icons/icon - msn.png" class="msn-icon-img" alt="MSN">
+                <span class="msn-title-text">&gt;&gt;GaBi_LeoN&lt;&lt;</span>
+            </div>
+
+            <!-- Right Side: Buttons -->
+            <div class="msn-controls">
+                <!-- Minimizar -->
+                <div class="msn-btn msn-btn-blue" title="Minimizar">
+                    <div class="icon-min"></div>
+                </div>
+                <!-- Maximizar -->
+                <div class="msn-btn msn-btn-blue" title="Maximizar">
+                    <div class="icon-max"></div>
+                </div>
+                <!-- Cerrar -->
+                <div class="msn-btn msn-btn-red" title="Cerrar">
+                    <div class="icon-close"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resto de la ventana (simulado) -->
+        <div style="height: 100px; background: #ECE9D8; border-top: 1px solid #fff;"></div>
+    </div>
+
+</body>
+
+</html>

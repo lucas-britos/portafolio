@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <title>MSN Messenger Chat Window Replica</title>
+    <style>
+        body {
+            background: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-family: Tahoma, sans-serif;
+            margin: 0;
+        }
+
+        .window-container {
+            width: 600px;
+            height: 500px;
+            /* Fixed height for better visual */
+            background: #eef3fa;
+            border-radius: 5px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #4a6b9a;
+        }
+
+        /* --- MSN TOOLBAR (Compact Styles) --- */
+        .msn-toolbar-container {
+            position: relative;
+            height: 58px;
+            width: 100%;
+            background: #eef3fa;
+            overflow: hidden;
+            border-bottom: 1px solid #9cb4d4;
+            flex-shrink: 0;
+        }
+
+        .msn-svg-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 1;
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.15));
+        }
+
+        .msn-icons-layer {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            align-items: flex-start;
+            height: 100%;
+            padding-left: 5px;
+        }
+
+        .msn-main-icons {
+            display: flex;
+            gap: 2px;
+            padding-top: 2px;
+        }
+
+        .msn-btn-tool {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-decoration: none;
+            color: #0b1f3c;
+            font-size: 10px;
+            font-family: Tahoma, sans-serif;
+            width: 54px;
+            height: 50px;
+            border-radius: 3px;
+            transition: all 0.1s;
+        }
+
+        .msn-btn-tool:hover {
+            background: linear-gradient(to bottom, rgba(255, 255, 255, 0.9) 0%, rgba(255, 255, 255, 0.4) 100%);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.8);
+        }
+
+        .msn-btn-tool img {
+            width: 28px;
+            height: 28px;
+            margin-bottom: 2px;
+            filter: drop-shadow(0 2px 2px rgba(0, 0, 0, 0.2));
+        }
+
+        .msn-secondary-icons {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-left: 70px;
+            margin-top: 3px;
+        }
+
+        .btn-secondary-wrapper {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: linear-gradient(to bottom, #fff 0%, #f0f0f0 100%);
+            border: 1px solid #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+        }
+
+        .msn-small-icon {
+            width: 12px;
+            height: 12px;
+        }
+
+        .msn-branding {
+            position: absolute;
+            right: 15px;
+            top: 7px;
+            z-index: 2;
+        }
+
+        .msn-branding img {
+            height: 16px;
+            filter: drop-shadow(0 1px 0 rgba(255, 255, 255, 0.8));
+        }
+
+        /* --- CHAT CONTENT AREA --- */
+        .msn-chat-area {
+            flex: 1;
+            padding: 10px;
+            display: flex;
+            gap: 10px;
+            background: #eef3fa;
+            /* Match toolbar bg */
+        }
+
+        /* LEFT COLUMN: Header + History */
+        .msn-chat-left-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #8ba1bd;
+            border-radius: 4px;
+            background: #fff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            overflow: hidden;
+            /* For border-radius */
+        }
+
+        /* "Para:" Header Section */
+        .msn-conversation-header {
+            height: 28px;
+            background: linear-gradient(to bottom, #ffffff 0%, #eef3fa 100%);
+            border-bottom: 1px solid #d6e1ed;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 8px;
+        }
+
+        .msn-to-label {
+            font-size: 11px;
+            font-weight: bold;
+            color: #0b1f3c;
+            /* Dark Blue */
+        }
+
+        .msn-to-address {
+            font-size: 11px;
+            color: #444;
+            margin-left: 3px;
+        }
+
+        .msn-webcam-mini {
+            width: 16px;
+            height: 16px;
+            cursor: pointer;
+            opacity: 0.9;
+        }
+
+        .msn-webcam-mini:hover {
+            opacity: 1;
+            filter: drop-shadow(0 0 2px rgba(0, 0, 100, 0.3));
+        }
+
+        /* Chat History Box */
+        .msn-history-box {
+            flex: 1;
+            background: #fff;
+            padding: 10px;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .msn-contact-info-line {
+            margin-bottom: 5px;
+        }
+
+        .msn-contact-name {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ff3399;
+            /* Hot Pink */
+            margin-right: 5px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .msn-emoticon {
+            font-size: 16px;
+            vertical-align: middle;
+            margin-right: 5px;
+        }
+
+        .msn-status-text {
+            font-size: 11px;
+            color: #000;
+        }
+
+        .msn-divider-line {
+            height: 1px;
+            background-color: #dcdcdc;
+            width: 100px;
+            margin-top: 2px;
+            margin-bottom: 15px;
+        }
+
+        /* RIGHT COLUMN: Avatar */
+        .msn-chat-right-col {
+            width: 104px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding-top: 2px;
+            /* Small adjustment */
+        }
+
+        .msn-avatar-frame {
+            width: 98px;
+            height: 98px;
+            background: linear-gradient(to bottom, #ffffff 0%, #e2eff9 100%);
+            border: 1px solid #8ba1bd;
+            border-radius: 5px;
+            padding: 2px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Inner detail line on avatar frame */
+        .msn-avatar-frame::before {
+            content: "";
+            position: absolute;
+            top: 1px;
+            left: 1px;
+            right: 1px;
+            bottom: 1px;
+            border: 1px solid #fff;
+            border-radius: 3px;
+            pointer-events: none;
+        }
+
+        .msn-avatar-img {
+            width: 92px;
+            height: 92px;
+            border-radius: 2px;
+            border: 1px solid #a3bde3;
+            object-fit: cover;
+            position: relative;
+            z-index: 1;
+        }
+
+        .msn-avatar-arrow-btn {
+            position: absolute;
+            bottom: 1px;
+            right: 1px;
+            width: 14px;
+            height: 14px;
+            background: #dcecf9;
+            border: 1px solid #8ba1bd;
+            border-radius: 2px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 8px;
+            color: #4a6b9a;
+            cursor: pointer;
+            z-index: 2;
+        }
+
+        .msn-avatar-arrow-btn:hover {
+            background: #fff;
+        }
+
+        /* Window controls fake */
+        .window-header-fake {
+            height: 30px;
+            background: linear-gradient(to bottom, #0058e6 0%, #0049b0 100%);
+            border-radius: 5px 5px 0 0;
+            display: flex;
+            align-items: center;
+            padding-left: 10px;
+            color: white;
+            font-weight: bold;
+            font-size: 13px;
+            text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+            justify-content: space-between;
+            padding-right: 5px;
+            cursor: default;
+        }
+
+        .window-controls {
+            display: flex;
+            gap: 2px;
+        }
+
+        .win-btn {
+            width: 21px;
+            height: 21px;
+            border-radius: 3px;
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            background: linear-gradient(to bottom, #d2e4f7 0%, #87aedb 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            color: #0b1f3c;
+            cursor: pointer;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.5);
+        }
+
+        .win-btn-close {
+            background: linear-gradient(to bottom, #e0a1a1 0%, #d65959 100%);
+            border-color: rgba(255, 255, 255, 0.6);
+            color: white;
+            font-weight: bold;
+        }
+
+        .menu-bar-fake {
+            height: 22px;
+            background: #ece9d8;
+            border-bottom: 1px solid #d4d0c8;
+            display: flex;
+            align-items: center;
+            padding-left: 5px;
+            font-size: 11px;
+            color: #000;
+            cursor: default;
+        }
+
+        .menu-item {
+            padding: 0 8px;
+        }
+
+        .menu-item:hover {
+            background: #316ac5;
+            color: white;
+        }
+
+        /* --- MSN INPUT AREA (Refined) --- */
+        .msn-input-area {
+            display: flex;
+            flex-direction: column;
+            background: #eef3fa;
+            border: 1px solid #8ba1bd;
+            border-radius: 3px;
+            margin-top: 5px;
+            position: relative;
+            padding-bottom: 24px;
+            /* Space for tabs */
+        }
+
+        /* Toolbar Row */
+        .msn-input-toolbar {
+            height: 24px;
+            background: linear-gradient(to bottom, #fcfcfe 0%, #eef3fa 100%);
+            border-bottom: 1px solid #d6e1ed;
+            display: flex;
+            align-items: center;
+            padding-left: 5px;
+            gap: 5px;
+        }
+
+        .msn-toolbar-item {
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            padding: 2px 4px;
+            border: 1px solid transparent;
+            border-radius: 3px;
+            font-size: 11px;
+            color: #0b1f3c;
+        }
+
+        .msn-toolbar-item:hover {
+            background-color: #fff;
+            border-color: #cecece;
+        }
+
+        .msn-toolbar-icon {
+            font-size: 14px;
+            margin-right: 2px;
+        }
+
+        .msn-toolbar-text {
+            margin-right: 2px;
+        }
+
+        .msn-toolbar-arrow {
+            font-size: 8px;
+            color: #0b1f3c;
+            margin-left: 2px;
+        }
+
+        .msn-toolbar-separator {
+            width: 1px;
+            height: 14px;
+            background-color: #a0a0a0;
+            margin: 0 4px;
+        }
+
+        /* Input Row */
+        .msn-input-row {
+            display: flex;
+            height: 100px;
+            background: #fff;
+        }
+
+        .msn-input {
+            flex: 1;
+            border: none;
+            resize: none;
+            padding: 5px;
+            font-family: Tahoma, sans-serif;
+            font-size: 12px;
+            outline: none;
+        }
+
+        .msn-send-group {
+            width: 70px;
+            display: flex;
+            flex-direction: column;
+            padding: 4px;
+            gap: 4px;
+            background: linear-gradient(to bottom, #fff 0%, #eef3fa 100%);
+            border-left: 1px solid #d6e1ed;
+        }
+
+        .msn-big-btn {
+            flex: 1;
+            border: 1px solid #8ba1bd;
+            border-radius: 3px;
+            background: linear-gradient(to bottom, #ffffff 0%, #e2eff9 100%);
+            font-family: Tahoma, sans-serif;
+            font-size: 11px;
+            color: #0b1f3c;
+            cursor: pointer;
+            font-weight: bold;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .msn-big-btn:hover {
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.2);
+            border-color: #316ac5;
+        }
+
+        .msn-big-btn:active {
+            background: #e2eff9;
+            box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        /* Footer Tabs (Pen/Text) */
+        .msn-input-footer {
+            position: absolute;
+            bottom: 0px;
+            right: 70px;
+            /* Aligned with input text area edge */
+            display: flex;
+            align-items: flex-end;
+            height: 24px;
+        }
+
+        .msn-input-tab {
+            width: 26px;
+            height: 22px;
+            background: #eef3fa;
+            border: 1px solid #8ba1bd;
+            border-bottom: none;
+            border-radius: 3px 3px 0 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            margin-left: 2px;
+            font-size: 12px;
+            color: #8ba1bd;
+        }
+
+        .msn-tab-active {
+            background: #fff;
+            height: 24px;
+            border-bottom: 1px solid #fff;
+            /* Blend with input area */
+            margin-bottom: -1px;
+            /* Overlap border */
+            z-index: 10;
+            color: #000;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="window-container">
+        <!-- HEADER -->
+        <div class="window-header-fake">
+            <span>Lucas - Conversación</span>
+            <div class="window-controls">
+                <div class="win-btn">_</div>
+                <div class="win-btn">□</div>
+                <div class="win-btn win-btn-close">X</div>
+            </div>
+        </div>
+
+        <!-- MENU -->
+        <div class="menu-bar-fake">
+            <span class="menu-item">Archivo</span>
+            <span class="menu-item">Edición</span>
+            <span class="menu-item">Ver</span>
+            <span class="menu-item">Acciones</span>
+            <span class="menu-item">Herramientas</span>
+            <span class="menu-item">Ayuda</span>
+        </div>
+
+        <!-- TOOLBAR V4 -->
+        <div class="msn-toolbar-container">
+            <svg class="msn-svg-bg" viewBox="0 0 600 58" preserveAspectRatio="none">
+                <defs>
+                    <linearGradient id="plasticGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#ffffff" />
+                        <stop offset="30%" stop-color="#f5f9ff" />
+                        <stop offset="100%" stop-color="#dcecf9" />
+                    </linearGradient>
+                </defs>
+                <path d="M 0,0 L 600,0 L 600,28 C 520,28 480,55 420,55 L 0,55 Z" fill="url(#plasticGradient)"
+                    stroke="rgba(255,255,255,0.4)" stroke-width="1" />
+            </svg>
+            <div class="msn-icons-layer">
+                <div class="msn-main-icons">
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-invitar.png" alt="Invitar"
+                            onerror="this.src='https://placehold.co/28x28?text=Inv'">
+                        <span>Invitar</span>
+                    </a>
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-archivos.png" alt="Archivos"
+                            onerror="this.src='https://placehold.co/28x28?text=Arc'">
+                        <span>Archivos</span>
+                    </a>
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-camara.png" alt="Cámara"
+                            onerror="this.src='https://placehold.co/28x28?text=Cam'">
+                        <span>Cámara</span>
+                    </a>
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-audio.png" alt="Audio"
+                            onerror="this.src='https://placehold.co/28x28?text=Aud'">
+                        <span>Audio</span>
+                    </a>
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-juegos.png" alt="Juegos"
+                            onerror="this.src='https://placehold.co/28x28?text=Jue'">
+                        <span>Juegos</span>
+                    </a>
+                    <a href="#" class="msn-btn-tool">
+                        <img src="images/msn-icon-actividades.png" alt="Actividades"
+                            onerror="this.src='https://placehold.co/28x28?text=Act'">
+                        <span>Actividades</span>
+                    </a>
+                </div>
+                <div class="msn-secondary-icons">
+                    <div class="btn-secondary-wrapper" title="Bloquear">
+                        <img src="images/msn-icon-block.png" class="msn-small-icon" alt="Block"
+                            onerror="this.src='https://placehold.co/12?text=B'">
+                    </div>
+                    <div class="btn-secondary-wrapper" title="Manuscrito">
+                        <img src="images/msn-icon-pen.png" class="msn-small-icon" alt="Scribble"
+                            onerror="this.src='https://placehold.co/12?text=P'">
+                    </div>
+                </div>
+            </div>
+            <div class="msn-branding">
+                <img src="images/msn-butterfly.png" alt="msn" onerror="this.src='https://placehold.co/40x16?text=msn'">
+            </div>
+        </div>
+
+        <!-- MAIN CHAT AREA -->
+        <div class="msn-chat-area">
+
+            <!-- Left Column: Header + Chat History -->
+            <div class="msn-chat-left-col">
+                <!-- Header "Para:" -->
+                <div class="msn-conversation-header">
+                    <div>
+                        <span class="msn-to-label">Para: </span>
+                        <span class="msn-to-address">&lt;lucas@hotmail.com&gt;</span>
+                    </div>
+                    <img src="images/msn-icon-camara.png" class="msn-webcam-mini" alt="Webcam">
+                </div>
+
+                <!-- Chat History Scrollable Area -->
+                <div class="msn-history-box">
+                    <div class="msn-contact-info-line">
+                        <span class="msn-contact-name">Lucas</span>
+                        <span class="msn-emoticon">😋</span>
+                        <span class="msn-status-text">está conectado</span>
+                    </div>
+                    <div class="msn-divider-line"></div>
+
+                    <!-- Simulating empty chat history or some system messages if needed -->
+                    <div style="margin-top: 10px; color: #888; font-size: 11px;">
+                        <!-- Empty space -->
+                    </div>
+                </div>
+
+                <!-- Input Area (Replica Pixel-Perfect Refined) -->
+                <div class="msn-input-area">
+
+                    <!-- Formatting Toolbar -->
+                    <div class="msn-input-toolbar">
+                        <div class="msn-toolbar-item">
+                            <span class="msn-toolbar-icon"
+                                style="font-family: 'Times New Roman', serif; font-weight: bold; font-size: 14px;">A</span>
+                            <span class="msn-toolbar-text">Fuentes</span>
+                        </div>
+                        <div class="msn-toolbar-separator"></div>
+
+                        <div class="msn-toolbar-item">
+                            <span class="msn-toolbar-icon">🙂</span>
+                            <span class="msn-toolbar-arrow">▼</span>
+                        </div>
+
+                        <div class="msn-toolbar-item">
+                            <span class="msn-toolbar-icon">😉</span>
+                            <span class="msn-toolbar-text">Guiños</span>
+                            <span class="msn-toolbar-arrow">▼</span>
+                        </div>
+
+                        <div class="msn-toolbar-item">
+                            <span class="msn-toolbar-icon">🌄</span>
+                            <span class="msn-toolbar-text">Fondos</span>
+                            <span class="msn-toolbar-arrow">▼</span>
+                        </div>
+
+                        <div class="msn-toolbar-item">
+                            <span class="msn-toolbar-icon">🎁</span>
+                            <span class="msn-toolbar-arrow">▼</span>
+                        </div>
+
+                        <div class="msn-toolbar-item" id="msn-zumbido-btn" title="Enviar un zumbido"
+                            style="margin-left: auto;">
+                            <img src="images/icon - zumbido.png" alt="Zumbido" style="width: 20px; height: 16px;">
+                        </div>
+                    </div>
+
+                    <!-- Text Area + Send Buttons -->
+                    <div class="msn-input-row">
+                        <textarea class="msn-input" id="msn-input"></textarea>
+
+                        <div class="msn-send-group">
+                            <button class="msn-big-btn" id="msn-enviar">Enviar</button>
+                            <button class="msn-big-btn" id="msn-search">Buscar</button>
+                        </div>
+                    </div>
+
+                    <!-- Handwriting / Text Tabs -->
+                    <div class="msn-input-footer">
+                        <div class="msn-input-tab">
+                            <span style="transform: rotate(45deg); display: inline-block; font-size: 10px;">✏️</span>
+                        </div>
+                        <div class="msn-input-tab msn-tab-active">
+                            <span style="font-weight: bold;">A</span>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Right Column: Avatar -->
+            <div class="msn-chat-right-col">
+                <div class="msn-avatar-frame">
+                    <img src="images/icono-user.jpg" class="msn-avatar-img" alt="Avatar"
+                        onerror="this.src='https://placehold.co/92x92?text=User'">
+                    <div class="msn-avatar-arrow-btn">▼</div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</body>
+
+</html>

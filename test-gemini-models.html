@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Gemini Models</title>
+    <style>
+        body {
+            font-family: 'Courier New', monospace;
+            background: #000;
+            color: #0f0;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: #111;
+            padding: 20px;
+            border: 2px solid #0f0;
+        }
+
+        h1 {
+            color: #0f0;
+            text-align: center;
+        }
+
+        .model {
+            background: #222;
+            padding: 10px;
+            margin: 10px 0;
+            border-left: 3px solid #0f0;
+        }
+
+        .model-name {
+            font-weight: bold;
+            color: #0ff;
+        }
+
+        .error {
+            color: #f00;
+            background: #300;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        .success {
+            color: #0f0;
+            background: #030;
+            padding: 10px;
+            margin: 10px 0;
+        }
+
+        button {
+            background: #0f0;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button:hover {
+            background: #0ff;
+        }
+
+        #loading {
+            text-align: center;
+            color: #ff0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔍 Gemini API - Test de Modelos Disponibles</h1>
+        <p>Este script va a mostrar todos los modelos de Gemini disponibles para tu API key.</p>
+
+        <button onclick="listModels()">🚀 Listar Modelos Disponibles</button>
+
+        <div id="loading" style="display: none;">
+            <p>⏳ Consultando API de Google...</p>
+        </div>
+
+        <div id="results"></div>
+    </div>
+
+    <script>
+        const API_KEY = 'AIzaSyDEgMylFTyjcKsbKJZZGnoBZLaf-UTGkgo';
+
+        async function listModels() {
+            const resultsDiv = document.getElementById('results');
+            const loadingDiv = document.getElementById('loading');
+            resultsDiv.innerHTML = '';
+            loadingDiv.style.display = 'block';
+
+            try {
+                // Listar modelos disponibles
+                const url = `https://generativelanguage.googleapis.com/v1beta/models?key=${API_KEY}`;
+                console.log('Llamando a:', url);
+
+                const response = await fetch(url);
+                const data = await response.json();
+
+                loadingDiv.style.display = 'none';
+
+                if (!response.ok) {
+                    resultsDiv.innerHTML = `
+                        <div class="error">
+                            <h2>❌ Error al listar modelos</h2>
+                            <p><strong>Status:</strong> ${response.status}</p>
+                            <pre>${JSON.stringify(data, null, 2)}</pre>
+                        </div>
+                    `;
+                    return;
+                }
+
+                if (!data.models || data.models.length === 0) {
+                    resultsDiv.innerHTML = '<div class="error">No se encontraron modelos disponibles.</div>';
+                    return;
+                }
+
+                // Filtrar solo modelos que soporten generateContent
+                const generateContentModels = data.models.filter(model =>
+                    model.supportedGenerationMethods &&
+                    model.supportedGenerationMethods.includes('generateContent')
+                );
+
+                let html = `<div class="success">
+                    <h2>✅ Modelos Disponibles (${generateContentModels.length})</h2>
+                    <p>Los siguientes modelos soportan <code>generateContent</code>:</p>
+                </div>`;
+
+                generateContentModels.forEach(model => {
+                    html += `
+                        <div class="model">
+                            <div class="model-name">📦 ${model.name}</div>
+                            <div><strong>Nombre corto:</strong> <code>${model.name.split('/').pop()}</code></div>
+                            <div><strong>Display Name:</strong> ${model.displayName || 'N/A'}</div>
+                            <div><strong>Descripción:</strong> ${model.description || 'N/A'}</div>
+                            <div><strong>Métodos soportados:</strong> ${model.supportedGenerationMethods.join(', ')}</div>
+                        </div>
+                    `;
+                });
+
+                html += `
+                    <div class="success">
+                        <h3>🎯 Modelos recomendados para tu chat:</h3>
+                        <ul>
+                `;
+
+                generateContentModels.forEach(model => {
+                    const shortName = model.name.split('/').pop();
+                    html += `<li><code>${shortName}</code></li>`;
+                });
+
+                html += `
+                        </ul>
+                        <p><strong>Usa uno de estos nombres en tu código JavaScript.</strong></p>
+                    </div>
+                `;
+
+                resultsDiv.innerHTML = html;
+
+                // También mostrar en consola
+                console.log('=== MODELOS DISPONIBLES ===');
+                console.log(generateContentModels.map(m => m.name.split('/').pop()));
+
+            } catch (error) {
+                loadingDiv.style.display = 'none';
+                resultsDiv.innerHTML = `
+                    <div class="error">
+                        <h2>💥 Error de red</h2>
+                        <p>${error.message}</p>
+                        <pre>${error.stack}</pre>
+                    </div>
+                `;
+                console.error('Error:', error);
+            }
+        }
+    </script>
+</body>
+
+</html>
