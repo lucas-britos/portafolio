@@ -562,7 +562,10 @@ function enviarMensajeMSN() {
     } catch (error) {
       console.error("Chat error:", error);
       const typing = document.getElementById('msn-typing');
-      if (typing) typing.textContent = 'Error crítico de MSN. Reinicia la sesión.';
+      if (typing) {
+        typing.style.color = 'red';
+        typing.textContent = 'Error de conexión: ' + error.message;
+      }
     }
   }, 1500);
 }
@@ -613,11 +616,19 @@ function convertirEmoticonesAEmojis(texto) {
 }
 
 async function obtenerRespuestaGemini(mensajeUsuario) {
-  if (!LUCAS_API_KEY || LUCAS_API_KEY === 'TU_API_KEY_ACA') {
+  // Safe check for global variable
+  let apiKey = '';
+  try {
+    apiKey = LUCAS_API_KEY;
+  } catch (e) {
+    return "SYSTEM ERROR: La variable LUCAS_API_KEY no está definida. Verificá que js/config.js se esté cargando correctamente.";
+  }
+
+  if (!apiKey || apiKey === 'TU_API_KEY_ACA') {
     return "SYSTEM ERROR: Se ha producido una excepción grave en 0x0028:C0011E36. El chat no puede continuar sin una clave de sistema válida.";
   }
 
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${LUCAS_API_KEY}`;
+  const url = `https://generativelanguage.googleapis.com/v1/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
 
   const systemInstructions = `Identidad y Contexto:
 Sos Lucas Britos (34 años), de Colón, BA. Chateás desde el MSN en 2005. Tu perfil es el de un líder con seniority en gestión de productos y dirección institucional.
@@ -650,10 +661,16 @@ IMPORTANTE: NO incluyas el formato 'Lucas Britos dice:' en tus respuestas, solo 
     });
   }
 
-  // Actualizar historial y mantener los últimos 20 mensajes para optimizar tokens
-  historialMSN.push({ role: "user", parts: [{ text: mensajeUsuario }] });
+  // Evitar mensajes consecutivos del mismo rol (regla estricta de Google)
+  const ultimoMensaje = historialMSN[historialMSN.length - 1];
+  if (!ultimoMensaje || ultimoMensaje.role !== "user") {
+    historialMSN.push({ role: "user", parts: [{ text: mensajeUsuario }] });
+  } else {
+    // Si el último ya era del usuario (por un error previo), actualizamos ese mensaje en lugar de agregar uno nuevo
+    ultimoMensaje.parts = [{ text: mensajeUsuario }];
+  }
+
   if (historialMSN.length > 20) {
-    // Mantener siempre los primeros 2 mensajes (system prompt) + los últimos 18
     historialMSN = [historialMSN[0], historialMSN[1], ...historialMSN.slice(-18)];
   }
 
@@ -696,9 +713,16 @@ IMPORTANTE: NO incluyas el formato 'Lucas Britos dice:' en tus respuestas, solo 
       }
 
       if (res.status === 404) {
-        console.error("Error 404 - Not Found. URL llamada:", url);
-        console.error("Esto puede significar que el modelo no está disponible para tu API key.");
-        return "Error de sistema (0x80040E16): El modelo de IA no está disponible. Verificá la consola (F12) para detalles de la URL.";
+        console.error("Error 404 - Not Found. Intentando listar modelos disponibles...");
+        try {
+          const listUrl = `https://generativelanguage.googleapis.com/v1/models?key=${apiKey}`;
+          const listRes = await fetch(listUrl);
+          const listData = await listRes.json();
+          console.log("Modelos disponibles para esta API Key:", listData);
+        } catch (listError) {
+          console.error("No se pudieron listar los modelos:", listError);
+        }
+        return "Error de sistema (0x80040E16): El modelo de IA no se encuentra. Revisá la consola (F12) para ver la lista de modelos disponibles.";
       }
 
       if (data.error && data.error.message.includes("API key not valid")) {
