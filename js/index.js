@@ -579,12 +579,7 @@ function enviarMensajeMSN() {
       if (isMinimized || isNotFocused) {
         dispararAlertaMSN(response);
       } else {
-        // Si está abierta, solo el sonido
-        const sonidoMSN = document.getElementById('sonido-msn');
-        if (sonidoMSN) {
-          sonidoMSN.currentTime = 0;
-          sonidoMSN.play().catch(e => console.log(e));
-        }
+        // En MSN original, si estás chateando en la ventana activa, no suena el "tururu" a cada rato.
       }
     } catch (error) {
       console.error("Chat error:", error);
