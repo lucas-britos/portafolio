@@ -1446,7 +1446,7 @@ body {
 .msn-toast {
   position: fixed;
   bottom: 45px;
-  right: 20px;
+  right: 0;
   width: 240px;
   background: linear-gradient(to bottom, #f0f7ff 0%, #d4e7f9 100%);
   border: 1px solid #7a96b0;
