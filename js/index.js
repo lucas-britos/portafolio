@@ -553,7 +553,7 @@ function enviarMensajeMSN() {
   const typingDiv = document.createElement('div');
   typingDiv.id = 'msn-typing';
   typingDiv.style.cssText = 'color: #666; font-style: italic; margin-top: 10px; font-size: 11px;';
-  typingDiv.textContent = 'Lucas Britos calculando respuesta...';
+  typingDiv.textContent = 'Lucas Britos está escribiendo...';
   msnMessages.appendChild(typingDiv);
   msnMessages.scrollTop = msnMessages.scrollHeight;
 
